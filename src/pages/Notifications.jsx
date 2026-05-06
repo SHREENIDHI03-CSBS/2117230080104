@@ -10,6 +10,8 @@ import {
   Container,
   Button,
   Stack,
+  Chip,
+  Box,
 } from "@mui/material";
 
 function Notifications() {
@@ -26,27 +28,31 @@ function Notifications() {
     setViewed(savedViewed);
 
     const loadNotifications = async () => {
-      Log(
-        "frontend",
-        "info",
-        "api",
-        "Fetching notifications"
-      );
+      try {
+        await Log(
+          "frontend",
+          "info",
+          "api",
+          "Fetching notifications"
+        );
 
-      const data = await fetchNotifications(page, 10);
+        const data = await fetchNotifications(page, 10);
 
-      setNotifications(data);
+        setNotifications(data);
 
-      const top = getTopNotifications(data);
+        const top = getTopNotifications(data);
 
-      setTopNotifications(top);
+        setTopNotifications(top);
 
-      Log(
-        "frontend",
-        "info",
-        "page",
-        "Notifications loaded successfully"
-      );
+        await Log(
+          "frontend",
+          "info",
+          "page",
+          "Notifications loaded successfully"
+        );
+      } catch (error) {
+        console.error(error);
+      }
     };
 
     loadNotifications();
@@ -70,30 +76,122 @@ function Notifications() {
     );
   };
 
+  const getCardColor = (type) => {
+    switch (type) {
+      case "Placement":
+        return "#e3f2fd";
+      case "Result":
+        return "#e8f5e9";
+      case "Event":
+        return "#fff3e0";
+      default:
+        return "#ffffff";
+    }
+  };
+
   return (
-    <Container>
+    <Container maxWidth="md" sx={{ mt: 4 }}>
+      {/* Header */}
       <Typography
         variant="h2"
         align="center"
         gutterBottom
-        sx={{ marginTop: 4 }}
+        fontWeight="bold"
       >
         Top Notifications
       </Typography>
 
+      {/* Filter Section */}
       <Stack
         direction="row"
         spacing={2}
         justifyContent="center"
-        sx={{ marginBottom: 4 }}
+        flexWrap="wrap"
+        sx={{ mb: 4 }}
       >
-        <Button
-          variant="contained"
+        <Chip
+          label="All"
+          color={filter === "All" ? "primary" : "default"}
           onClick={() => setFilter("All")}
-        >
-          All
-        </Button>
+        />
 
+        <Chip
+          label="Placement"
+          color={filter === "Placement" ? "primary" : "default"}
+          onClick={() => setFilter("Placement")}
+        />
+
+        <Chip
+          label="Result"
+          color={filter === "Result" ? "primary" : "default"}
+          onClick={() => setFilter("Result")}
+        />
+
+        <Chip
+          label="Event"
+          color={filter === "Event" ? "primary" : "default"}
+          onClick={() => setFilter("Event")}
+        />
+      </Stack>
+
+      {/* Notifications */}
+      {filteredNotifications.map((item) => (
+        <Card
+          key={item.ID}
+          onClick={() => markAsViewed(item.ID)}
+          sx={{
+            mb: 3,
+            borderRadius: 3,
+            backgroundColor: viewed.includes(item.ID)
+              ? "#f5f5f5"
+              : getCardColor(item.Type),
+            opacity: viewed.includes(item.ID) ? 0.7 : 1,
+            cursor: "pointer",
+            transition: "0.3s",
+            "&:hover": {
+              transform: "scale(1.02)",
+            },
+          }}
+        >
+          <CardContent>
+            <Stack spacing={1}>
+              <Typography
+                variant="h5"
+                color="primary"
+                fontWeight="bold"
+              >
+                {item.Type}
+              </Typography>
+
+              <Typography variant="h6">
+                {item.Message}
+              </Typography>
+
+              <Typography color="text.secondary">
+                {item.Timestamp}
+              </Typography>
+
+              {viewed.includes(item.ID) && (
+                <Chip
+                  label="Viewed"
+                  color="success"
+                  size="small"
+                />
+              )}
+            </Stack>
+          </CardContent>
+        </Card>
+      ))}
+
+      {/* Pagination */}
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        gap={2}
+        mt={4}
+        mb={4}
+      >
         <Button
           variant="outlined"
           disabled={page === 1}
@@ -112,63 +210,7 @@ function Notifications() {
         >
           Next
         </Button>
-
-        <Button
-          variant="contained"
-          onClick={() => setFilter("Placement")}
-        >
-          Placement
-        </Button>
-
-        <Button
-          variant="contained"
-          onClick={() => setFilter("Result")}
-        >
-          Result
-        </Button>
-
-        <Button
-          variant="contained"
-          onClick={() => setFilter("Event")}
-        >
-          Event
-        </Button>
-      </Stack>
-
-      {filteredNotifications.map((item) => (
-        <Card
-          key={item.ID}
-          onClick={() => markAsViewed(item.ID)}
-          sx={{
-            marginBottom: 3,
-            padding: 2,
-            borderRadius: 3,
-            opacity: viewed.includes(item.ID)
-              ? 0.5
-              : 1,
-            backgroundColor: viewed.includes(item.ID)
-              ? "#f5f5f5"
-              : "#ffffff",
-          }}
-        >
-          <CardContent>
-            <Typography
-              variant="h5"
-              color="primary"
-            >
-              {item.Type}
-            </Typography>
-
-            <Typography variant="h6">
-              {item.Message}
-            </Typography>
-
-            <Typography color="text.secondary">
-              {item.Timestamp}
-            </Typography>
-          </CardContent>
-        </Card>
-      ))}
+      </Box>
     </Container>
   );
 }
