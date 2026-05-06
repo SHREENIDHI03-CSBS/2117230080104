@@ -17,6 +17,7 @@ function Notifications() {
   const [notifications, setNotifications] = useState([]);
   const [topNotifications, setTopNotifications] = useState([]);
   const [filter, setFilter] = useState("All");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
 
@@ -29,7 +30,7 @@ function Notifications() {
         "Fetching notifications"
       );
 
-      const data = await fetchNotifications();
+      const data = await fetchNotifications(page,10);
 
       setNotifications(data);
 
@@ -48,7 +49,7 @@ function Notifications() {
 
     loadNotifications();
 
-  }, []);
+  }, [page]);
 
   const filteredNotifications =
     filter === "All"
@@ -83,6 +84,24 @@ function Notifications() {
         >
           All
         </Button>
+        <Button
+    variant="outlined"
+    disabled={page === 1}
+    onClick={() => setPage(page - 1)}
+  >
+    Previous
+  </Button>
+
+  <Typography variant="h6">
+    Page {page}
+  </Typography>
+
+  <Button
+    variant="outlined"
+    onClick={() => setPage(page + 1)}
+  >
+    Next
+  </Button>
 
         <Button
           variant="contained"

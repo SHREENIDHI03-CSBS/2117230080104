@@ -12,7 +12,7 @@ function Home() {
       "Home page loaded successfully"
     );
 
-  }, []);
+  }, [page]);
 
   return (
     <div>
